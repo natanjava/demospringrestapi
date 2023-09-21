@@ -1,17 +1,9 @@
 package demo.api.rest.controller;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,17 +19,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import demo.api.rest.model.UserChart;
-import demo.api.rest.model.UserReport;
 import demo.api.rest.model.Usuario;
-import demo.api.rest.model.UsuarioDTO;
 import demo.api.rest.repository.TelefoneRepository;
 import demo.api.rest.repository.UsuarioRepository;
 import demo.api.rest.service.ImplementacaoUserDetailsService;
-import demo.api.rest.service.ServiceRelatorio;
 
 @RestController /* Arquitetura REST */
 @RequestMapping(value = "/usuario")
@@ -53,8 +40,7 @@ public class IndexController {
 	@Autowired
 	private TelefoneRepository telefoneRepository;
 	
-	@Autowired
-	private ServiceRelatorio serviceRelatorio;
+
 	
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -289,40 +275,7 @@ public class IndexController {
 		
 	}
 	
-	@GetMapping(value="/relatorio", produces = "application/text")
-	public ResponseEntity<String> downloadRelatorio(HttpServletRequest request) throws Exception {
-		byte[] pdf = serviceRelatorio.geraRelatorio("relatorio-usuario-api",  new HashMap(), request.getServletContext());
-		
-		String base64Pdf = "data:application/pdf;base64," + Base64.encodeBase64String(pdf);
-		
-		return new ResponseEntity<String>(base64Pdf, HttpStatus.OK);
-		
-	}
 	
-	@PostMapping(value="/relatorio/", produces = "application/text")
-	public ResponseEntity<String> downloadRelatorioParam(HttpServletRequest request, 
-			@RequestBody UserReport userReport) throws Exception {
-		
-		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-		
-		SimpleDateFormat dateFormatParam = new SimpleDateFormat("yyyy-MM-dd");
-		
-		String dataInicio =  dateFormatParam.format(dateFormat.parse(userReport.getDataInicio()));
-		
-		String dataFim =  dateFormatParam.format(dateFormat.parse(userReport.getDataFim()));
-		
-		Map<String,Object> params = new HashMap<String, Object>();
-		
-		params.put("DATA_INICIO", dataInicio);
-		params.put("DATA_FIM", dataFim);
-		
-		byte[] pdf = serviceRelatorio.geraRelatorio("relatorio-usuario-api-param", params,
-				request.getServletContext());
-		
-		String base64Pdf = "data:application/pdf;base64," + Base64.encodeBase64String(pdf);
-		
-		return new ResponseEntity<String>(base64Pdf, HttpStatus.OK);		
-	}
 	
 	@GetMapping(value= "/grafico", produces = "application/json")
 	public ResponseEntity<UserChart> grafico(){
